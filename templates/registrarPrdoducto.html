@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabla</title>
+</head>
+<body>
+    <h2>Bienvenido, {{ usuario }}!</h2>
+    <p>Aquí están tus datos:</p>
+    <table border="1" id="tabla-productos">
+        <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Categoría</th>
+            <th>Foto</th>
+            <th>Acción</th>
+        </tr>
+        {% for producto in productos %}
+        <tr>
+            <td>{{ producto.codigo }}</td>
+            <td>{{ producto.nombre }}</td>
+            <td>{{ producto.precio }}</td>
+            <td>{{ producto.categoria }}</td>
+            <td><img src="../static/imagenes/{{ producto[''] }}" required></td>
+            <td><a href="#">Editar</a> | <a href="#">Eliminar</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br>
+    <button onclick="mostrarFormulario()">Registrar productos</button>
+    <br>
+    <div id="formulario-registro" style="display: none;">
+        <h3>Registrar nuevo producto</h3>
+        <form action="/registrar_producto" method="POST">
+            <input type="text" name="codigo" placeholder="Código"><br>
+            <input type="text" name="nombre" placeholder="Nombre"><br>
+            <input type="text" name="precio" placeholder="Precio">
+            <input type="text" name="categoria" placeholder="Categoría"><br>
+            <select name="categoria" class="form-select" required>
+                <option value="">Seleccione</option>
+                {%for c in categorias %}
+                    <option value= "{{c['_id']}}">{{c['nombre']}}</option>
+            <input type="text" name="foto" placeholder="URL de la foto"><br>
+            <input type="text" name="foto1" placeholder="seleccione la foto"><br>
+            <input type="file" name="foto1" id="foto1" onchange="visualizarfoto(event)" class="form-control" accepr=".jpg" required>
+            <input type="submit" value="Registrar">
+        </form>
+    </div>
+    <br>
+    <a href="/logout">Salir</a>
+
+    <script>
+        function mostrarFormulario() {
+            document.getElementById("formulario-registro").style.display = "block";
+        }
+    </script>
+</body>
+</html>

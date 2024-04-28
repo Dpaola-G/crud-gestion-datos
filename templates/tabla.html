@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabla</title>
+    <!-- CSS de Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Script de SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Bienvenido, {{ usuario }}!</h2>
+        <p>Aquí están tus datos:</p>
+        <a href="/logout" class="btn btn-primary mb-3">Salir</a>
+        <button onclick="mostrarFormulario()" class="btn btn-success mb-3">Agregar</button>
+
+        <input type="text" id="filtro-letra" placeholder="Nombre" oninput="filtrarProductos()" class="form-control mb-3">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Precio</th>
+                    <th>Categoría</th>
+                    <th>Foto URL</th>
+                    <th>Foto1</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for producto in productos %}
+                <tr id="fila-{{ loop.index }}">
+                    <td>{{ producto.codigo }}</td>
+                    <td>{{ producto.nombre }}</td>
+                    <td>{{ producto.precio }}</td>
+                    <td>{{ producto.categoria }}</td>
+                    <td><img src="{{ producto.foto }}" alt="Foto" width="65"></td>
+                    <td class="text-center">
+                        <img src="../static/imagenes/{{ producto.codigo }}.jpg" alt="" width="50" height="50">
+                
+                    </td>
+                    <td>
+                        <button onclick="editarFila({{ loop.index }})" class="btn btn-primary btn-editar">Editar</button>
+
+                        <button onclick="eliminarFila({{ loop.index }})" class="btn btn-danger">Eliminar</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div id="formulario-registro" style="display: none;">
+            <h3>Registrar nuevos producto</h3>
+            <form action="/registrar_producto" method="POST" enctype="multipart/form-data" onsubmit="return validarFormulario()">
+                <input type="number" name="codigo" placeholder="Código" required class="form-control mb-3">
+                <input type="text" name="nombre" placeholder="Nombre" required class="form-control mb-3">
+                <input type="number" name="precio" placeholder="Precio" required class="form-control mb-3">
+                <input type="text" name="categoria" placeholder="categoria" required class="form-control mb-3">
+                
+                
+                <input type="text" name="foto" placeholder="URL de la foto" required class="form-control mb-3">
+                <label for="foto1">Foto:</label><br>
+                <input type="file" id="foto1" name="foto1" accept="image/*"><br><br>    
+            
+                <input type="submit" value="Registrar" class="btn btn-primary">
+            </form>
+        </div>
+
+        <div id="formulario-edicion" style="display: none;">
+            <h3>Editar producto</h3>
+            <form onsubmit="enviarEdicion()">
+                <input type="hidden" id="codigo-edicion" name="codigo">
+                <label for="nombre-edicion" class="form-label">Nombre:</label>
+                <input type="text" id="nombre-edicion" name="nombre" placeholder="Ingrese el nuevo nombre" required class="form-control mb-3">
+                <label for="precio-edicion" class="form-label">Precio:</label>
+                <input type="text" id="precio-edicion" name="precio" placeholder="Ingrese el nuevo precio" required class="form-control mb-3">
+                <label for="categoria-edicion" class="form-label">Categoría:</label>
+                <input type="text" id="categoria-edicion" name="categoria" placeholder="Ingrese la nueva categoría" required class="form-control mb-3">
+                <label for="foto-edicion" class="form-label">URL de la foto:</label>
+                <input type="text" id="foto-edicion" name="foto" placeholder="Ingrese la nueva URL de la foto" required class="form-control mb-3">
+                <input type="submit" value="Enviar" class="btn btn-primary">
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function mostrarFormulario() {
+            document.getElementById("formulario-registro").style.display = "block";
+        }
+
+        function editarFila(numeroFila) {
+            var fila = document.getElementById("fila-" + numeroFila);
+            var codigo = fila.cells[0].innerText;
+            var nombre = fila.cells[1].innerText;
+            var precio = fila.cells[2].innerText;
+            var categoria = fila.cells[3].innerText;
+            var foto = fila.cells[4].querySelector("img").src;
+
+            document.getElementById("formulario-edicion").style.display = "block";
+            document.getElementById("codigo-edicion").value = codigo;
+            document.getElementById("nombre-edicion").value = nombre;
+            document.getElementById("precio-edicion").value = precio;
+            document.getElementById("categoria-edicion").value = categoria;
+            document.getElementById("foto-edicion").value = foto;
+        }
+
+        function enviarEdicion() {
+            var codigo = document.getElementById("codigo-edicion").value;
+            var nombre = document.getElementById("nombre-edicion").value;
+            var precio = document.getElementById("precio-edicion").value;
+            var categoria = document.getElementById("categoria-edicion").value;
+            var foto = document.getElementById("foto-edicion").value;
+
+            fetch("/actualizar_producto", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ codigo: codigo, nombre: nombre, precio: precio, categoria: categoria, foto: foto })
+            })
+            .then(response => {
+                if (response.ok) {
+                    var fila = document.getElementById("fila-" + codigo);
+                    fila.cells[1].innerText = nombre;
+                    fila.cells[2].innerText = precio;
+                    fila.cells[3].innerText = categoria;
+                    fila.cells[4].querySelector("img").src = foto;
+                    document.getElementById("formulario-edicion").style.display = "none";
+                }
+            })
+            .catch(error => console.error("Error al editar producto:", error));
+        }
+
+        function eliminarFila(numeroFila) {
+            var fila = document.getElementById("fila-" + numeroFila);
+            var codigo = fila.cells[0].innerText;
+            fetch("/eliminar_producto", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ codigo: codigo })
+            })
+            .then(response => {
+                if (response.ok) {
+                    fila.remove();
+                }
+            })
+            .catch(error => console.error("Error al eliminar producto:", error));
+        }
+
+        function filtrarProductos() {
+            var letra = document.getElementById("filtro-letra").value.toLowerCase();
+            var filas = document.getElementsByTagName("tr");
+
+            for (var i = 1; i < filas.length; i++) {
+                var nombre = filas[i].getElementsByTagName("td")[1].innerText.toLowerCase();
+                if (nombre.startsWith(letra)) {
+                    filas[i].style.display = "";
+                } else {
+                    filas[i].style.display = "none";
+                }
+            }
+        }
+    </script>
+
+</html>

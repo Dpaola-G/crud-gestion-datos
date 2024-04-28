@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Producto</title>
+</head>
+<body>
+    <h2>Editar Producto</h2>
+    <form action="/editar_producto" method="POST">
+        <input type="text" number="codigo" value="{{ producto.codigo }}" readonly><br>
+        <input type="text" name="nombre" value="{{ producto.nombre }}" required><br>
+        <input type="number" name="precio" value="{{ producto.precio }}" required><br>
+        <input type="text" name="categoria" value="{{ producto.categoria }}" required><br>
+        <input type="text" name="foto" value="{{ producto.foto }}" required><br>
+        <input type="submit" value="Guardar Cambios">
+    </form>
+</body>
+</html>
